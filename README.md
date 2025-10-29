@@ -53,6 +53,13 @@ npm i
 npm run dev
 ```
 
+Create Amplify Sandbox.
+
+```shell
+# in frontend directory
+npx ampx sandbox
+```
+
 Start the frontend. Uses port 3000.
 
 ```shell
