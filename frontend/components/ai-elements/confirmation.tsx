@@ -11,9 +11,13 @@ import {
   useContext,
 } from "react";
 
+type ApprovalState = {
+  approved: boolean;
+};
+
 type ConfirmationContextValue = {
-  approval: ToolUIPart["approval"];
-  state: ToolUIPart["state"];
+  approval: ApprovalState | undefined;
+  state: ToolUIPart["state"] | "approval-requested" | "approval-responded" | "output-denied";
 };
 
 const ConfirmationContext = createContext<ConfirmationContextValue | null>(
@@ -31,8 +35,8 @@ const useConfirmation = () => {
 };
 
 export type ConfirmationProps = ComponentProps<typeof Alert> & {
-  approval?: ToolUIPart["approval"];
-  state: ToolUIPart["state"];
+  approval?: ApprovalState;
+  state: ToolUIPart["state"] | "approval-requested" | "approval-responded" | "output-denied";
 };
 
 export const Confirmation = ({
