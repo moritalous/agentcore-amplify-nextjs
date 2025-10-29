@@ -65,13 +65,33 @@ const reasonings = [
   },
 ]
 
-const ChatBot = () => {
+function buildApiUrl() {
+  if (process.env.NEXT_PUBLIC_AGENT_ARN) {
+    const agentArn = process.env.NEXT_PUBLIC_AGENT_ARN!
+    const region = process.env.NEXT_PUBLIC_AWS_REGION!
+    const escapedArn = encodeURIComponent(agentArn)
+    const qualifier = process.env.NEXT_PUBLIC_QUALIFIER
+    return `https://bedrock-agentcore.${region}.amazonaws.com/runtimes/${escapedArn}/invocations?qualifier=${qualifier}`
+  } else {
+    return 'http://localhost:8080/invocations'
+  }
+}
+
+const ChatBot = ({ token }: { token: string }) => {
   const [input, setInput] = useState('')
   const [model, setModel] = useState<string>(models[0].value)
   const [reasoning, setReasonings] = useState(reasonings[1].value)
 
+  const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36)}`);
+
   const transportOptions: HttpChatTransportInitOptions<UIMessage> = {
-    api: 'http://localhost:8080/invocations',
+    api: buildApiUrl(),
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'X-Amzn-Trace-Id': `trace-${Date.now()}`,
+      'Content-Type': 'application/json',
+      'X-Amzn-Bedrock-AgentCore-Runtime-Session-Id': sessionId,
+    },
   }
 
   const { messages, sendMessage, status } = useChat({
