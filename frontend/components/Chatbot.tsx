@@ -32,6 +32,7 @@ import {
   SourcesContent,
   SourcesTrigger,
 } from '@/components/ai-elements/sources'
+import { signAwsRequest } from '@/lib/utils'
 import { useChat } from '@ai-sdk/react'
 import {
   DefaultChatTransport,
@@ -77,7 +78,13 @@ function buildApiUrl() {
   }
 }
 
-const ChatBot = ({ token }: { token: string }) => {
+const ChatBot = ({ credentials }: {
+  credentials: {
+    accessKeyId: string
+    secretAccessKey: string
+    sessionToken?: string
+  }
+}) => {
   const [input, setInput] = useState('')
   const [model, setModel] = useState<string>(models[0].value)
   const [reasoning, setReasonings] = useState(reasonings[1].value)
@@ -86,11 +93,32 @@ const ChatBot = ({ token }: { token: string }) => {
 
   const transportOptions: HttpChatTransportInitOptions<UIMessage> = {
     api: buildApiUrl(),
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'X-Amzn-Trace-Id': `trace-${Date.now()}`,
-      'Content-Type': 'application/json',
-      'X-Amzn-Bedrock-AgentCore-Runtime-Session-Id': sessionId,
+    fetch: async (url: RequestInfo | URL, options?: RequestInit) => {
+      const body = JSON.parse(options!.body as string);
+      
+      const headers = {
+        'content-type': 'application/json',
+        'host': new URL(url.toString()).hostname,
+        'x-amzn-bedrock-agentcore-runtime-session-id': sessionId,
+      };
+      
+      const { headers: signedHeaders, body: signedBody } = await signAwsRequest(
+        url.toString(),
+        body,
+        headers,
+        credentials,
+        {
+          service: 'bedrock-agentcore',
+          region: process.env.NEXT_PUBLIC_AWS_REGION!,
+          method: 'POST'
+        }
+      );
+
+      return globalThis.fetch(url, {
+        ...options,
+        headers: signedHeaders,
+        body: signedBody,
+      });
     },
   }
 

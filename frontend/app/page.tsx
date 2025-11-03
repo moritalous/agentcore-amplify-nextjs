@@ -12,20 +12,29 @@ Amplify.configure(outputs)
 
 
 const AuthenticatedContent = () => {
-  const [token, setToken] = useState('')
+  const [credentials, setCredentials] = useState<{
+    accessKeyId: string
+    secretAccessKey: string
+    sessionToken?: string
+  }>()
 
   useEffect(() => {
     fetchAuthSession().then((session) => {
-      const accessToken = session.tokens?.accessToken?.toString() || ''
-      setToken(accessToken)
+      if (session.credentials) {
+        setCredentials({
+          accessKeyId: session.credentials.accessKeyId,
+          secretAccessKey: session.credentials.secretAccessKey,
+          sessionToken: session.credentials.sessionToken
+        })
+      }
     })
   }, [])
 
-  if (!token) {
+  if (!credentials) {
     return <div>Loading...</div>
   }
 
-  return <Chatbot token={token}></Chatbot>
+  return <Chatbot credentials={credentials}></Chatbot>
 }
 export default function Home() {
   return (

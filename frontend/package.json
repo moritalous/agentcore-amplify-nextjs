@@ -11,6 +11,8 @@
   "dependencies": {
     "@ai-sdk/react": "^2.0.82",
     "@aws-amplify/ui-react": "^6.13.1",
+    "@aws-crypto/sha256-universal": "^5.2.0",
+    "@aws-sdk/signature-v4": "^3.370.0",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
